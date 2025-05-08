@@ -59,7 +59,7 @@ if __name__ == '__main__':
     # 로그, Keras Backend 설정을 먼저하고 RLTrader 모듈들을 이후에 임포트해야 함
     from agent import Agent
     from learners import ReinforcementLearner, DQNLearner, \
-        PolicyGradientLearner, ActorCriticLearner, A2CLearner, A3CLearner
+    PolicyGradientLearner, ActorCriticLearner, A2CLearner, A3CLearner, DeepSARSALearner
 
     # 모델 경로 준비
     value_network_path = ''
@@ -119,6 +119,9 @@ if __name__ == '__main__':
                 learner = A2CLearner(**{**common_params, 
                     'value_network_path': value_network_path, 
                     'policy_network_path': policy_network_path})
+            elif args.rl_method == 'sarsa':
+                learner = DeepSARSALearner(**{**common_params,
+                    'value_network_path': value_network_path})
             elif args.rl_method == 'monkey':
                 args.net = args.rl_method
                 args.num_epoches = 1

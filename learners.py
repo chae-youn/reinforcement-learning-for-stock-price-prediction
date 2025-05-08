@@ -620,4 +620,5 @@ class DeepSARSALearner(ReinforcementLearner):
             x[i] = sample
             y_value[i] = value
             y_value[i, action] = reward + self.discount_factor * next_value[next_action]
+
         return x, y_value, None
