@@ -613,12 +613,14 @@ class DeepSARSALearner(ReinforcementLearner):
             self.memory_reward,
         ))
         x = np.zeros((len(memory) - 1, self.num_steps, self.num_features))
-        y_value = np.zeros((len(memory) - 1), self.agent.NUM_ACTIONS)
+        y_value = np.zeros((len(memory) - 1, self.agent.NUM_ACTIONS))
         for i in range(len(memory) - 1):
             sample, action, value, reward = memory[i]
-            next_sample, next_action, next_value, _ = memory[i + 1]
+            next_sample, _, _, _ = memory[i + 1]
+            predicted_next_value = self.value_network.predict([next_sample])[0]
+            next_action, _, _ = self.agent.decide_action(predicted_next_value, None, epsilon = 0)
             x[i] = sample
             y_value[i] = value
-            y_value[i, action] = reward + self.discount_factor * next_value[next_action]
+            y_value[i, action] = reward + self.discount_factor * predicted_next_value[next_action]
 
         return x, y_value, None
