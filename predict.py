@@ -13,7 +13,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--stock_code')
     parser.add_argument('--ver', choices=['v1', 'v2', 'v3'], default='v1')
-    parser.add_argument('--rl_method', choices=['dqn', 'pg', 'ac', 'a2c'])
+    parser.add_argument('--rl_method', choices=['dqn', 'pg', 'ac', 'a2c', 'sarsa'])
     parser.add_argument('--net', choices=['dnn', 'lstm', 'cnn'], default='dnn')
     parser.add_argument('--num_steps', type=int, default=1)
     parser.add_argument('--balance', type=int, default=10000000)
