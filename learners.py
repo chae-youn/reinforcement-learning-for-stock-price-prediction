@@ -588,30 +588,6 @@ class A3CLearner(ReinforcementLearner):
                 policy_network=self.policy_network, **kwargs)
             self.learners.append(learner)
 
-    class DeepSARSALearner(ReinforcementLearner):
-        def __init__(self, *args, value_network_path=None, policy_network_path=None, **kwargs):
-            super().__init__(*args, **kwargs)
-            self.value_network_path = value_network_path
-            self.init_value_network()
-
-        def get_batch(self):
-            memory = list(zip(
-                self.memory_sample,
-                self.memory_action,
-                self.memory_value,
-                self.memory_reward,
-            ))
-            x = np.zeros((len(memory) - 1, self.num_steps, self.num_features))
-            y_value - np.zeros((len(memory) - 1), self.agent.NUM_ACTIONS)
-            for i in range(len(memory) - 1):
-                sample, action, value, reward = memory[i]
-                next_sample, next_action, next_value, _ = memory[i + 1]
-                x[i] = sample
-                y_value[i] = value
-                y_value[i, action] = reward + self.discount_factor * next_value[next_action]
-            return x, y_value, None
-
-
     def run(self, learning=True):
         threads = []
         for learner in self.learners:
@@ -621,3 +597,27 @@ class A3CLearner(ReinforcementLearner):
             thread.start()
             time.sleep(1)
         for thread in threads: thread.join()
+
+
+class DeepSARSALearner(ReinforcementLearner):
+    def __init__(self, *args, value_network_path=None, policy_network_path=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.value_network_path = value_network_path
+        self.init_value_network()
+
+    def get_batch(self):
+        memory = list(zip(
+            self.memory_sample,
+            self.memory_action,
+            self.memory_value,
+            self.memory_reward,
+        ))
+        x = np.zeros((len(memory) - 1, self.num_steps, self.num_features))
+        y_value = np.zeros((len(memory) - 1), self.agent.NUM_ACTIONS)
+        for i in range(len(memory) - 1):
+            sample, action, value, reward = memory[i]
+            next_sample, next_action, next_value, _ = memory[i + 1]
+            x[i] = sample
+            y_value[i] = value
+            y_value[i, action] = reward + self.discount_factor * next_value[next_action]
+        return x, y_value, None
