@@ -5,6 +5,7 @@ import collections
 import threading
 import time
 import numpy as np
+from requests.packages import target
 from tqdm import tqdm
 from utils import sigmoid
 from environment import Environment
@@ -604,23 +605,25 @@ class DeepSARSALearner(ReinforcementLearner):
         super().__init__(*args, **kwargs)
         self.value_network_path = value_network_path
         self.init_value_network()
+        self.policy_network = None
 
     def get_batch(self):
-        memory = list(zip(
-            self.memory_sample,
-            self.memory_action,
-            self.memory_value,
-            self.memory_reward,
-        ))
-        x = np.zeros((len(memory) - 1, self.num_steps, self.num_features))
-        y_value = np.zeros((len(memory) - 1, self.agent.NUM_ACTIONS))
-        for i in range(len(memory) - 1):
-            sample, action, value, reward = memory[i]
-            next_sample, _, _, _ = memory[i + 1]
-            predicted_next_value = self.value_network.predict([next_sample])[0]
-            next_action, _, _ = self.agent.decide_action(predicted_next_value, None, epsilon = 0)
-            x[i] = sample
-            y_value[i] = value
-            y_value[i, action] = reward + self.discount_factor * predicted_next_value[next_action]
+        memory = zip(
+            reversed(self.memory_sample),
+            reversed(self.memory_action),
+            reversed(self.memory_value),
+            reversed(self.memory_reward),
+        )
 
+        x = np.zeros((len(self.memory_sample), self.num_steps, self.num_features))
+        y_value = np.zeros((len(self.memory_sample), self.agent.NUM_ACTIONS))
+
+        next_q = 0.0
+
+        for i, (sample, action, value, reward) in enumerate(memory):
+            x[i] = sample
+            r = self.memory_reward[-1] - reward
+            y_value[i] = value
+            y_value[i, action] = reward + self.discount_factor * next_q
+            next_value = value[action]
         return x, y_value, None
